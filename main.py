@@ -2,6 +2,17 @@ import requests
 import json
 import time
 
+import pandas as pd
+
+columns = [
+    "Wallet address",
+    "Token",
+    "Price",
+    "Amount",
+    "USD value"
+]
+df = pd.DataFrame(columns=columns)
+
 from fp.fp import FreeProxy
 
 from fake_useragent import UserAgent
@@ -32,6 +43,8 @@ for id_ in id_s:
 
     print(f'\n\tID: {id_}')
     ua_ = ua.random
+
+    new_rows_ = []
 
     headers = {
         'authority': 'api.debank.com',
@@ -78,17 +91,31 @@ for id_ in id_s:
             pass
 
         if status_code == 200:
-            aaa = json.loads(response.text)
+            data = json.loads(response.text)
 
-            for i, item in enumerate(aaa['data']):
-                print(f'\n\t{i} Token: {item["optimized_symbol"]}')
-                price_ = item["price"]
-                print(f'\t\t--->>> Price: {price_}')
-                amount_ = int(item["raw_amount"]) / 1000000000000000000  # !!!!!! >>> raw_amount <<< !!!!!!
-                print(f'\t\t--->>> Amount: {amount_}')
-                print(f'\t\t--->>> USD Value: {price_ * amount_}')
+            for i, item in enumerate(data['data']):
+                token = item["optimized_symbol"]
+                price = item["price"]
+                amount = int(item["raw_amount"]) / 1000000000000000000
+                usd_value = price * amount
+
+                new_rows_.append(
+                    {
+                        "Wallet address": id_,
+                        "Token": token,
+                        "Price": price,
+                        "Amount": amount,
+                        "USD value": usd_value
+                    }
+                )
+
+                df = pd.concat([df, pd.DataFrame(new_rows_, index=[0])], ignore_index=True)
+                print(df.to_string(index=False))
+
+                breakpoint()
 
             print('\n============================================================================\n')
+            breakpoint()
             break
         else:
             print(f"ERROR!!! --->>> {response}")
