@@ -115,7 +115,6 @@ for id_ in id_s:
                 breakpoint()
 
             print('\n============================================================================\n')
-            breakpoint()
             break
         else:
             print(f"ERROR!!! --->>> {response}")
